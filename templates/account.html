@@ -1,0 +1,41 @@
+{% extends "blank_layout.html" %}
+
+{% comment %} Banner section {% endcomment %}
+{% block banner %}
+{% include "account_banner.html" %}
+{% endblock banner %}
+
+{% comment %} Toggle Form {% endcomment %}
+{% block extra_scripts%}
+<script>
+    var LoginForm = document.getElementById("LoginForm");
+    var RegForm = document.getElementById("RegForm");
+    var Indicator = document.getElementById("Indicator");
+    function register() {
+        RegForm.style.transform = "translateX(0px)";
+        LoginForm.style.transform = "translateX(0px)";
+        Indicator.style.transform = "translateX(100px)";
+    }
+    function login() {
+        RegForm.style.transform = "translateX(300px)";
+        LoginForm.style.transform = "translateX(300px)";
+        Indicator.style.transform = "translateX(0px)";
+    }
+    {% comment %} Default Tab Check {% endcomment %}
+    {% if register %}
+    document.addEventListener("DOMContentLoaded", register);
+    {% else %}
+    document.addEventListener("DOMContentLoaded", login);
+    {% endif %}
+    </script>
+    {% if register %}
+    <script>
+        register()
+    </script>
+    {% else %}
+    <script>
+        login()
+    </script>
+    {% endif %}
+    {% endblock extra_scripts %}
+{% comment %} Toggle Form End {% endcomment %}

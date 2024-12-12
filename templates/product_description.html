@@ -1,0 +1,109 @@
+{% load static %}
+<div class="small-container single-product">
+    <div class="row">
+        <div class="col-2">
+            <img src="{{ product.image.url }}" width="100%" id="ProductImg">
+
+             <div class="small-img-row">
+                <div class="small-img-col">
+                    <img src="{{ product.image.url }}" width="100%" class="small-img">
+                </div>
+                <div class="small-img-col">
+                    <img src="{{ product.image.url }}" width="100%" class="small-img">
+                </div>
+                <div class="small-img-col">
+                    <img src="{{ product.image.url }}" width="100%" class="small-img">
+                </div>
+                <div class="small-img-col">
+                    <img src="{{ product.image.url }}" width="100%" class="small-img">
+                </div>
+            </div> 
+
+        </div>
+        <div class="col-2">
+            <p>{{product.title}}</p>
+            <h1>{{product.title}}</h1>
+            <h4>Price {{product.price}}</h4>
+            <form method="POST" action="{% url 'add_to_cart' %}"  enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" value="{{product.id}}" name="product_id"/>
+                <select>
+                    <option>Select Size</option>
+                    <option>XXL</option>
+                    <option>XL</option>
+                    <option>L</option>
+                    <option>M</option>
+                    <option>S</option>
+                </select>
+                <input type="number" name ="quantity" value="1">
+                <button type="submit" class="btn">Add To Cart</button>
+            </form>
+            <h3>Product Details <i class="fa fa-indent"></i></h3>
+            <p>{{ product.description }}</p>
+        </div>
+    </div>
+</div>
+{% comment %} 
+Related Products Starts
+<!-- title -->
+<div class="small-container">
+    <div class="row row-2">
+        <h2>Related Products</h2>
+        <p>View More</p>
+    </div>
+</div>
+<!-- Products -->
+<div class="small-container">
+    <div class="row">
+        <div class="col-4">
+            <img src="{% static 'images/product-9.jpg' %}">
+            <h4>Red Printed T-Shirt</h4>
+            <div class="rating">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <p>$50.00</p>
+        </div>
+        <div class="col-4">
+            <img src="{% static 'images/product-10.jpg' %}">
+            <h4>Red Printed T-Shirt</h4>
+            <div class="rating">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <p>$50.00</p>
+        </div>
+        <div class="col-4">
+            <img src="{% static 'images/product-11.jpg' %}">
+            <h4>Red Printed T-Shirt</h4>
+            <div class="rating">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <p>$50.00</p>
+        </div>
+        <div class="col-4">
+            <img src="{% static 'images/product-12.jpg' %}">
+            <h4>Red Printed T-Shirt</h4>
+            <div class="rating">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <p>$50.00</p>
+        </div>
+    </div>
+</div>
+Related Products Ends
+ {% endcomment %}

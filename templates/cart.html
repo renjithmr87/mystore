@@ -1,0 +1,12 @@
+ {% extends 'blank_layout.html' %}
+
+{% comment %} Content section {% endcomment %}
+{% block content %}
+{% if maessages %}
+    {% for maessage in messages %}
+        <li class="{{ maessage.tags }}">{{ maessage }}</li>
+    {% endfor %}
+{% else %}
+{% include 'cart_container.html' %}
+{% endif %}
+{% endblock content %}
