@@ -28,6 +28,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['mystore-vpex.onrender.com']
 
+import os
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+
+
 
 # Application definition
 
