@@ -60,9 +60,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mystore.wsgi.application'
 
 # Database
+
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres:postgres@localhost:5432/mystore',
+        default=os.getenv('DATABASE_URL', 'postgres://mystoreuser:ren1234@localhost:5432/mystoredb'),
         conn_max_age=600
     )
 }
@@ -99,3 +100,4 @@ MEDIA_URL = '/media/'  # Add trailing slash
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
