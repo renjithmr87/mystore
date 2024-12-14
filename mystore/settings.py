@@ -63,8 +63,7 @@ WSGI_APPLICATION = 'mystore.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgres://mystoreuser:ren1234@localhost:5432/mystoredb'),
-        conn_max_age=600
+                default='postgres://mystoreuser:ren1234@localhost:5432/mystoredb'
     )
 }
 
