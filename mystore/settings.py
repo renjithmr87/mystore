@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-@ggd-azuj*+i%%erxrf=ost#qae(6$=j)h*#wo0yfpotr1qz!*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['mystore-vpex.onrender.com']
+ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
 
 import os
 
