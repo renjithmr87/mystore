@@ -16,9 +16,9 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # ALLOWED_HOSTS = ['mystore-vpex.onrender.com',]
 
-# ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'mystore-vpex.onrender.com, 127.0.0.1, localhost').split(',')
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'mystore-vpex.onrender.com, 127.0.0.1, localhost').split(',')
 
 CSRF_TRUSTED_ORIGINS = ['https://mystore-vpex.onrender.com']
 
