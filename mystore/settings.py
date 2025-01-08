@@ -10,15 +10,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-for-dev')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'False'
+# DEBUG = os.getenv('DEBUG', 'True') == 'False'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 
 # ALLOWED_HOSTS = ['mystore-vpex.onrender.com',]
 
-ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
+# ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
 
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1, localhost').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'mystore-vpex.onrender.com, 127.0.0.1, localhost').split(',')
 
 CSRF_TRUSTED_ORIGINS = ['https://mystore-vpex.onrender.com']
 
@@ -72,7 +72,7 @@ WSGI_APPLICATION = 'mystore.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-                default='postgres://mystoreuser:ren1234@localhost:5432/mystoredb'
+        default='postgres://mystoreuser:NgHowh8j4LJpqF4C2usZ8wVCBytmmGJv@dpg-ctechnhu0jms7399n3fg-a/mystoredb_9347'
     )
 }
 
