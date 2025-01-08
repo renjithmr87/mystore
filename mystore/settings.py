@@ -1,5 +1,6 @@
 import dj_database_url
 import os
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -9,9 +10,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-for-dev')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'False'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['mystore-vpex.onrender.com',]
+
+# ALLOWED_HOSTS = ['mystore-vpex.onrender.com',]
+
+ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
+
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1, localhost').split(',')
 
 
 # Application definition
@@ -86,7 +93,9 @@ USE_TZ = True
 
 # This setting informs Django of the URI path from which your static files will be served to users
 # Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
+
 STATIC_URL = '/static/'
+
 # This production code might break development mode, so we check whether we're in DEBUG mode
 if not DEBUG:    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -97,6 +106,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]  # Optional, if you have a "static" dir
 
 MEDIA_URL = '/media/'  # Add trailing slash
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
