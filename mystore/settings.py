@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-for-dev')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 # DEBUG = os.getenv('DEBUG', 'True') == 'False'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
@@ -68,13 +69,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mystore.wsgi.application'
 
-# Database
+# Database Settings for Using dj_database_url
 
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default='postgres://mystoreuser:NgHowh8j4LJpqF4C2usZ8wVCBytmmGJv@dpg-ctechnhu0jms7399n3fg-a/mystoredb_9347'
+#     )
+# }
+
+# Database Settings to add Custom Database Settings, like Connection Pooling or SSL Settings.
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://mystoreuser:NgHowh8j4LJpqF4C2usZ8wVCBytmmGJv@dpg-ctechnhu0jms7399n3fg-a/mystoredb_9347'
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mystoredb_9347',
+        'USER': 'mystoreuser',
+        'PASSWORD': 'NgHowh8j4LJpqF4C2usZ8wVCBytmmGJv',
+        'HOST': 'dpg-ctechnhu0jms7399n3fg-a',
+        'PORT': '5432',
+    }
 }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
