@@ -32,10 +32,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'products',
     'customers',
     'orders',
     'themes',
+    'administrator',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mystore.wsgi.application'
 
-# Database Settings for Using dj_database_url
+# Database Settings for Production Using dj_database_url
 
 # DATABASES = {
 #     'default': dj_database_url.config(
@@ -77,14 +80,14 @@ WSGI_APPLICATION = 'mystore.wsgi.application'
 #     )
 # }
 
-# Database Settings to add Custom Database Settings, like Connection Pooling or SSL Settings.
+# Database Settings for Local Development
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mystoredb_9347',
+        'NAME': 'mystoredb',
         'USER': 'mystoreuser',
-        'PASSWORD': 'NgHowh8j4LJpqF4C2usZ8wVCBytmmGJv',
-        'HOST': 'dpg-ctechnhu0jms7399n3fg-a',
+        'PASSWORD': 'ren1234',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
@@ -124,6 +127,10 @@ MEDIA_URL = '/media/'  # Add trailing slash
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
