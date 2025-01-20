@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 # Logout
 def signout(request):
     logout(request) 
-    return redirect('home')
+    return redirect('login')
 
 # Account
 @csrf_exempt
@@ -35,15 +35,17 @@ def show_account(request):
             
             # Creates Customer Account
             customer = Customer.objects.create(
+                user = user,
                 firstname = firstname,
                 lastname = lastname,
-                user = user,
                 phone = phone,
                 address = address,
             )
-            success_message = "User Registered Successfully"
-            messages.success(request, success_message)
-            return redirect('home')
+            if customer:
+                customer.save()
+                success_message = "User Registered Successfully"
+                messages.success(request, success_message)
+                return redirect('home')
         except Exception as e:
             error_message = "Username already taken"
             messages.error(request, error_message)
@@ -55,8 +57,11 @@ def show_account(request):
         user = authenticate(username=username,password=password)
         if user:
             login(request,user)
+            print("Redirecting to home...")  # Debugging
+
             return redirect('home')
         else:
             message_login="Invalid Credentials"
             messages.error(request,message_login)
-    return render(request, 'account.html',context) 
+    print(request.POST)
+    return render(request, 'account.html',context)

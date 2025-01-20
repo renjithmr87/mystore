@@ -8,15 +8,15 @@ class Order(models.Model):
     DELETE = 0
     DELETE_CHOICES = ((LIVE,'live'),(DELETE,'DELETE'))
 
-    CART_STAGE=0
-    ORDER_CONFIRMED=1
-    ORDER_PROCSSED=2
-    ORDER_DELIVERD=3
-    ORDER_REJECTED=4
-    STATUS_CHOICE=((ORDER_CONFIRMED,"ORDER_CONFIRMED"),
+    CART_STAGE = 0
+    ORDER_CONFIRMED = 1
+    ORDER_PROCSSED = 2
+    ORDER_DELIVERD = 3
+    ORDER_REJECTED = 4
+    STATUS_CHOICE = ((ORDER_CONFIRMED,"ORDER_CONFIRMED"),
                    (ORDER_PROCSSED,"ORDER_PROCSSED"),
                    (ORDER_DELIVERD,"ORDER_DELIVERD"),
-                   (ORDER_REJECTED,"ORDER_REJECTED")
+                   (ORDER_REJECTED,"ORDER_REJECTED"),
                    )
     order_status = models.IntegerField(choices=STATUS_CHOICE, default=CART_STAGE)
     total_price = models.FloatField(default=0)
