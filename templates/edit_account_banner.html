@@ -1,0 +1,35 @@
+{% load static %}
+<!-- Account Page -->
+<div class="account-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-2">
+                <img src="{% static 'images/image1.png' %}" width="100%">
+            </div>
+            <div class="col-2">
+                {% if maessages %}
+                <div class="maessage-container">
+                    {% for maessage in messages %}
+                        <P class="{{ maessage.tags }}">{{ maessage }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="form-container">
+                    
+                    <form id="EditForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="text" name="firstname" required minlength="3" maxlength="50" placeholder="First Name">
+                        <input type="text" name="lastname" required minlength="3" maxlength="50" placeholder="Last Name">
+                        <input type="text" name="username" required minlength="3" maxlength="10" placeholder="Username">
+                        <input type="email" name="email" required placeholder="Email">
+                        <input type="password" name="password" required minlength="6" placeholder="Password">
+                        <input type="text" name="address"placeholder="Address">
+                        <input type="number" name="phone" required placeholder="Phone">
+                        <button type="submit" name="edit_profile" class="btn">Update and Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

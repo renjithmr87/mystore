@@ -13,6 +13,7 @@
             <li><a href="{% url 'account' %}">Account</a></li>
             {% else %}
             <li><a href="{% url 'orders' %}">Order Status</a>
+            <li><a href="{% url 'edit_account' %}">Edit Profile</a>            
             <li><a href="{% url 'logout' %}">Logout</a></li>
             {% endif %}
         </ul>
@@ -21,4 +22,4 @@
     <a href="{% url 'cart' %}"><img src="{% static 'images/cart.png' %}" width="30px" height="30px"></a>
     {% endif %}
     <img src="{% static 'images/menu.png' %}" class="menu-icon" onclick="menutoggle()">
-</div>
+</div>  

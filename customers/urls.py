@@ -7,5 +7,6 @@ from . import views
 urlpatterns = [
     path('account', views.show_account, name='account'),
     path('logout', views.signout, name='logout'),
+    path('edit_account/<pk>', views.edit_profile, name='edit_account')
 ]
 

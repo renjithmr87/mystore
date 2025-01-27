@@ -36,6 +36,7 @@ def add_to_cart(request):
         return redirect('cart')
     else:
         return redirect('login')
+
 # Show the added Cart
 def show_cart(request):
     user = request.user
