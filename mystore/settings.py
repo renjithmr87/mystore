@@ -1,28 +1,27 @@
 import dj_database_url
 import os
-
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Security settings for production
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-for-dev')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-
-# DEBUG = os.getenv('DEBUG', 'True') == 'False'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
+# Allow your EC2 IP and domain
+ALLOWED_HOSTS = [
+    '11.204.111.62', 
+    'localhost', 
+    '127.0.0.1',
+    'your-domain.duckdns.org',  # Replace with your actual DuckDNS domain
+    '11.204.111.62.nip.io',     # Temporary domain using nip.io
+]
 
-# ALLOWED_HOSTS = ['mystore-vpex.onrender.com',]
-
-ALLOWED_HOSTS = ['mystore-vpex.onrender.com', '127.0.0.1', 'localhost']
-
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'mystore-vpex.onrender.com, 127.0.0.1, localhost').split(',')
-
-CSRF_TRUSTED_ORIGINS = ['https://mystore-vpex.onrender.com']
-
+CSRF_TRUSTED_ORIGINS = [
+    'http://11.204.111.62',
+    'http://11.204.111.62.nip.io',
+    'https://11.204.111.62.nip.io',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -72,26 +71,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mystore.wsgi.application'
 
-# Database Settings for Production Using dj_database_url
-
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default='postgres://mystoreuser:NgHowh8j4LJpqF4C2usZ8wVCBytmmGJv@dpg-ctechnhu0jms7399n3fg-a/mystoredb_9347'
-#     )
-# }
-
-# Database Settings for Local Development
+# Database configuration for Docker
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mystoredb',
-        'USER': 'mystoreuser',
-        'PASSWORD': 'ren1234',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'mystoredb'),
+        'USER': os.getenv('DB_USER', 'mystoreuser'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'ren1234'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
-
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,30 +97,17 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-# This setting informs Django of the URI path from which your static files will be served to users
-# Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
-
+# Static files
 STATIC_URL = '/static/'
-
-# This production code might break development mode, so we check whether we're in DEBUG mode
-if not DEBUG:    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Optional, if you have a "static" directory in your project
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-MEDIA_URL = '/media/'  # Add trailing slash
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
