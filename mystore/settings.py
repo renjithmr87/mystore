@@ -1,4 +1,3 @@
-import dj_database_url
 import os
 from pathlib import Path
 
@@ -8,19 +7,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-for-dev')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Allow your EC2 IP and domain
+# Allow EC2 IP and domain
 ALLOWED_HOSTS = [
-    '11.204.111.62', 
+    '13.204.111.62', 
     'localhost', 
     '127.0.0.1',
-    'your-domain.duckdns.org',  # Replace with your actual DuckDNS domain
-    '11.204.111.62.nip.io',     # Temporary domain using nip.io
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://11.204.111.62',
-    'http://11.204.111.62.nip.io',
-    'https://11.204.111.62.nip.io',
+    'http://13.204.111.62',
 ]
 
 # Application definition
