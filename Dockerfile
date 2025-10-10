@@ -13,4 +13,3 @@ COPY . .
 RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 CMD ["gunicorn", "mystore.wsgi:application", "--bind", "0.0.0.0:8000"]
-```
