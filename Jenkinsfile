@@ -1,3 +1,4 @@
+   groovy
 pipeline {
     agent any
     environment {
@@ -57,4 +58,4 @@ pipeline {
             echo '❌ Deployment failed.'
         }
     }
-}
+}, 

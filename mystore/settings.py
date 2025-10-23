@@ -1,3 +1,4 @@
+import dj_database_url
 import os
 from pathlib import Path
 
@@ -8,11 +9,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-for-dev')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Allow EC2 IP and domain
-ALLOWED_HOSTS = [
-    '13.204.111.62', 
-    'localhost', 
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://13.204.111.62',
@@ -51,7 +48,7 @@ ROOT_URLCONF = 'mystore.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [BASE_DIR /'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -66,17 +63,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mystore.wsgi.application'
 
-# Database configuration for Docker
+# # Database configuration for Docker
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('DB_NAME', 'mystoredb'),
+#         'USER': os.getenv('DB_USER', 'mystoreuser'),
+#         'PASSWORD': os.getenv('DB_PASSWORD', 'ren1234'),
+#         'HOST': os.getenv('DB_HOST', 'db'),
+#         # 'HOST':'127.0.0.1',
+#         'PORT': os.getenv('DB_PORT', '5432'),
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'mystoredb'),
-        'USER': os.getenv('DB_USER', 'mystoreuser'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'ren1234'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL')
+    )
 }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
