@@ -12,6 +12,7 @@ services:
   django:
     build: .
     command: ./entrypoint.sh
+    image: renjithmr/mystore:latest
 
     env_file:
       - .env
