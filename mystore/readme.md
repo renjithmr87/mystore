@@ -1,74 +1,89 @@
-# Django DevOps Deployment Guide (Offline)
-
-This guide will walk you through deploying your Django project `mystore` on **AWS EC2** with **Docker, Jenkins, Nginx, Gunicorn, and DockerHub**, including persistent static/media files and HTTPS using Certbot. All steps are designed to avoid paid AWS services except EC2.
+**cleaned, production-ready markdown guide**
+It’s focused purely on **containerized Jenkins master/worker**, **Django-PostgreSQL-Nginx stack**, and **automated deployment to EC2 (13.204.111.62)**.
 
 ---
 
-## Table of Contents
+# 🐳 Django DevOps Deployment Guide (Production, Offline)
+
+This guide explains how to deploy the Django project **`mystore`** on **AWS EC2 (13.204.111.62)** using **Docker, Jenkins (Master + Worker nodes), PostgreSQL, Nginx, and DockerHub**.
+It covers full CI/CD — from GitHub to EC2 deployment — with persistent static/media storage.
+
+---
+
+## 📋 Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [AWS EC2 Setup](#aws-ec2-setup)
-3. [Local Jenkins Setup](#local-jenkins-setup)
-4. [Dockerizing Django Project](#dockerizing-django-project)
+2. [EC2 Setup](#ec2-setup)
+3. [Dockerizing Django Project](#dockerizing-django-project)
+4. [Jenkins Master and Worker Setup](#jenkins-master-and-worker-setup)
 5. [Jenkins Pipeline Configuration](#jenkins-pipeline-configuration)
 6. [EC2 Deployment](#ec2-deployment)
 7. [Persistent Static & Media Files](#persistent-static--media-files)
-8. [Nginx Setup](#nginx-setup)
-9. [HTTPS with Certbot](#https-with-certbot)
-10. [Testing & Verification](#testing--verification)
+8. [Testing & Verification](#testing--verification)
+9. [Notes](#notes)
 
 ---
 
-## Prerequisites
+## 🧰 Prerequisites
 
-- AWS EC2 Ubuntu instance (t2.micro is fine)
-- Elastic IP attached
-- Local machine with Jenkins installed
-- DockerHub account with a free private repository
-- GitHub account with your Django project repo
-- Python 3.10+, Docker, Nginx installed on EC2
-
----
-
-## AWS EC2 Setup
-
-1. Launch Ubuntu EC2 instance.
-2. Attach Elastic IP.
-3. SSH into instance:
-```bash
-ssh -i mystore.pem ubuntu@13.204.111.62
-```
-4. Install Docker & Nginx:
-```bash
-sudo apt update
-sudo apt install -y docker.io nginx
-sudo systemctl enable docker
-sudo systemctl enable nginx
-```
+* AWS EC2 Ubuntu instance (t2.micro or higher)
+* Elastic IP attached
+* Jenkins Master & Worker nodes running in Docker containers
+* DockerHub account (for image registry)
+* GitHub repository for your Django project (`mystore`)
+* Valid SSH key for EC2 access
 
 ---
 
-## Local Jenkins Setup
+## ☁️ EC2 Setup
 
-1. Install Jenkins locally.
-2. Open Jenkins URL: `http://localhost:8080`.
-3. Install plugins:
-   - Docker Pipeline
-   - SSH Agent Plugin
-   - GitHub Integration Plugin
-   - Pipeline Plugin
-4. Add credentials:
-   - DockerHub (username + token)
-   - EC2 SSH key (`mystore.pem`)
-   - GitHub token (if repo is private)
+1. **Launch EC2 (Ubuntu 22.04+)** and attach your Elastic IP.
+
+2. **Connect via SSH**:
+
+   ```bash
+   ssh -i ~/.ssh/mystore.pem ubuntu@13.204.111.62
+   ```
+
+3. **Install Docker & Docker Compose**:
+
+   ```bash
+   sudo apt remove docker docker-engine docker.io containerd runc -y
+   sudo apt update
+   sudo apt install ca-certificates curl gnupg -y
+
+   sudo install -m 0755 -d /etc/apt/keyrings
+   sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+   sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+   echo \
+     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+     https://download.docker.com/linux/ubuntu \
+     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+   sudo apt update
+   sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+   docker --version
+   docker compose version
+   sudo systemctl enable docker
+   ```
+
+4. **(Optional)** Add Jenkins user to Docker group (if Jenkins container runs as user):
+
+   ```bash
+   sudo usermod -aG docker jenkins
+   sudo systemctl restart docker
+   ```
 
 ---
 
-## Dockerizing Django Project
+## 🐍 Dockerizing Django Project
 
 ### Dockerfile
+
 ```dockerfile
-FROM python:3.10-slim
+FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -79,6 +94,7 @@ CMD ["gunicorn", "mystore.wsgi:application", "--bind", "0.0.0.0:8000"]
 ```
 
 ### Django Settings (`settings.py`)
+
 ```python
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
@@ -86,181 +102,235 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
 ```
 
+### docker-compose.prod.yml
+
+```yaml
+version: '3.9'
+
+services:
+  django:
+    image: renjithmr/mystore:latest
+    container_name: mystore-django
+    restart: always
+    env_file: .env
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+    expose:
+      - 8000
+    depends_on:
+      - mystoredb
+
+  mystoredb:
+    image: postgres:15
+    container_name: mystore-mystoredb
+    restart: always
+    environment:
+      POSTGRES_DB: mystore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    container_name: mystore-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/home/ubuntu/mystore_data/static
+      - media_volume:/home/ubuntu/mystore_data/media
+    depends_on:
+      - django
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+```
+
 ---
 
-## Jenkins Pipeline Configuration
+## ⚙️ Jenkins Master and Worker Setup
+
+You will use **containerized Jenkins** for CI/CD.
+
+### Jenkins Master
+
+* Runs the main Jenkins controller.
+* Accessible via browser:
+
+  ```
+  http://<jenkins-master-public-ip>:8080
+  ```
+* Manages credentials, jobs, and pipelines.
+
+### Jenkins Worker (Agent)
+
+* Performs build and deploy tasks.
+* Connects via SSH to the master Jenkins.
+* Must have:
+
+  * Docker + Docker Compose
+  * SSH access to EC2 app server (`13.204.111.62`)
+
+### SSH Key Setup
+
+On **worker node**:
+
+```bash
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/mystore_ec2
+cat ~/.ssh/mystore_ec2.pub
+```
+
+Copy the public key into `/home/ubuntu/.ssh/authorized_keys` on the EC2 app server.
+
+In **Jenkins → Manage Credentials → Global**, add:
+
+* **Kind:** SSH private key
+* **ID:** `mystore_ec2_key`
+* **Username:** `ubuntu`
+* **Private Key:** contents of `~/.ssh/mystore_ec2`
+
+---
+
+## 🧩 Jenkins Pipeline Configuration
 
 ### Jenkinsfile
+
 ```groovy
 pipeline {
-    agent any
+    agent { label 'dev-node' }
+
     environment {
-        DOCKERHUB_REPO = "renjithmr/mystore"
-        EC2_HOST = "ubuntu@13.204.111.62"
-        IMAGE_TAG = "latest"
+        DOCKERHUB_REPO = 'renjithmr/mystore'
+        DOCKER_USER = 'renjithmr'
+        DOCKER_IMAGE = 'mystore'
+        APP_EC2_USER = 'ubuntu'
+        APP_EC2_HOST = '13.204.111.62'
+        APP_EC2_PATH = '/home/ubuntu/projects/mystore'
     }
+
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', credentialsId: 'github_creds', url: 'https://github.com/renjumr87/mystore.git'
+                git branch: 'master', url: 'https://github.com/renjumr87/mystore.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKERHUB_REPO:$IMAGE_TAG .'
+                sh 'docker compose -f docker-compose.prod.yml build'
             }
         }
+
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub_creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push $DOCKERHUB_REPO:$IMAGE_TAG
-                    docker logout
+                        docker login -u $DOCKER_USER -p $DOCKER_PASS
+                        docker tag myjob-django:latest $DOCKERHUB_REPO:latest
+                        docker push $DOCKERHUB_REPO:latest
+                        docker logout
                     '''
                 }
             }
         }
+
         stage('Deploy to EC2') {
             steps {
-                sshagent(credentials: ['ec2_ssh']) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no $EC2_HOST << EOF
-                    docker pull $DOCKERHUB_REPO:$IMAGE_TAG
-                    mkdir -p ~/mystore_data/static
-                    mkdir -p ~/mystore_data/media
-                    docker stop mystore || true
-                    docker rm mystore || true
-                    docker run -d --name mystore -p 8000:8000 \
-                        -v ~/mystore_data/static:/app/staticfiles \
-                        -v ~/mystore_data/media:/app/mediafiles \
-                        -e DJANGO_SETTINGS_MODULE=mystore.settings \
-                        $DOCKERHUB_REPO:$IMAGE_TAG
-                    sudo systemctl restart nginx || true
-                    EOF
-                    '''
+                sshagent(['mystore_ec2_key']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $APP_EC2_USER@$APP_EC2_HOST '
+                            cd $APP_EC2_PATH &&
+                            echo "Pulling latest Docker images..." &&
+                            docker compose -f docker-compose.prod.yml pull &&
+                            echo "Updating containers..." &&
+                            docker compose -f docker-compose.prod.yml up -d --no-deps --build &&
+                            echo "Cleaning up old images..." &&
+                            docker image prune -f
+                        '
+                    """
                 }
             }
         }
     }
+
     post {
-        success {
-            echo '✅ Deployment completed successfully!'
-        }
-        failure {
-            echo '❌ Deployment failed.'
-        }
+        success { echo '✅ Deployment completed successfully!' }
+        failure { echo '❌ Deployment failed.' }
     }
 }
 ```
 
 ---
 
-## EC2 Deployment
+## 🚀 EC2 Deployment
 
-1. Ensure Docker & Nginx installed.
-2. Give Jenkins machine SSH access:
-```bash
-# On EC2
-mkdir -p ~/.ssh
-nano ~/.ssh/authorized_keys # add Jenkins public key
-chmod 600 ~/.ssh/authorized_keys
-```
-3. Test connection from local Jenkins machine:
-```bash
-ssh -i jenkins_ec2 ubuntu@13.204.111.62
-```
-4. Deploy via Jenkins build → container runs on port 8000.
+1. On EC2, prepare the project directory:
 
----
+   ```bash
+   mkdir -p /home/ubuntu/projects/mystore
+   cd /home/ubuntu/projects/mystore
+   ```
 
-## Persistent Static & Media Files
+2. Ensure SSH key access works from Jenkins worker:
 
-- Map `/home/ubuntu/mystore_data/static` → `/app/staticfiles`
-- Map `/home/ubuntu/mystore_data/media` → `/app/mediafiles`
-- Update Nginx config:
-```nginx
-location /static/ { alias /home/ubuntu/mystore_data/static/; }
-location /media/ { alias /home/ubuntu/mystore_data/media/; }
-```
+   ```bash
+   ssh ubuntu@13.204.111.62
+   ```
+
+3. When you trigger a Jenkins build:
+
+   * Django Docker image is built and pushed to DockerHub
+   * Jenkins connects via SSH to EC2
+   * EC2 pulls and restarts containers automatically
 
 ---
 
-## Nginx Setup
+## 🗂️ Persistent Static & Media Files
 
-1. Edit `/etc/nginx/sites-available/mystore`:
+* Static: `/home/ubuntu/mystore_data/static`
+* Media: `/home/ubuntu/mystore_data/media`
 
-```nginx
-server {
-    listen 80;
-    server_name mystore.in www.mystore.in;
-
-    location /static/ {
-        alias /home/ubuntu/mystore_data/static/;
-    }
-
-    location /media/ {
-        alias /home/ubuntu/mystore_data/media/;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-```
-
-2. Enable & reload Nginx:
-```bash
-sudo ln -s /etc/nginx/sites-available/mystore /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
+These are mapped in `docker-compose.prod.yml` to persist data across redeployments.
 
 ---
 
-## HTTPS with Certbot
+## ✅ Testing & Verification
 
-1. Install Certbot:
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-```
+1. Trigger Jenkins pipeline manually or via webhook.
+2. Observe logs — successful deployment message should appear:
 
-2. Run Certbot:
-```bash
-sudo certbot --nginx -d mystore.in -d www.mystore.in
-```
+   ```
+   ✅ Deployment completed successfully!
+   ```
+3. Access your app:
 
-3. Verify HTTPS at `https://mystore.in`
+   ```
+   http://13.204.111.62
+   ```
+4. Verify containers:
 
-4. Auto-renew:
-```bash
-sudo certbot renew --dry-run
-sudo systemctl enable certbot.timer
-sudo systemctl start certbot.timer
-```
-
----
-
-## Testing & Verification
-
-1. Push new code → Jenkins automatically builds → DockerHub push → EC2 deployment
-2. Visit your domain/IP → should load Django app via HTTPS
-3. Upload media/static → stop container → redeploy → files persist
-4. Gunicorn + Nginx serve the app in production
+   ```bash
+   docker ps
+   docker compose logs
+   ```
 
 ---
 
-## Notes
+## 🧾 Notes
 
-- Keep EC2 running continuously for Elastic IP persistence
-- All static/media files persist via Docker volumes
-- Jenkins triggers builds manually or via GitHub Actions → SSH trigger
-- Ready to extend to Load Balancer or multiple EC2 instances later
+* Jenkins Master manages CI/CD pipelines; Worker performs build/deploy.
+* The Django app runs inside Docker with PostgreSQL and Nginx as supporting services.
+* Static and media files persist using Docker volumes.
+* Future enhancements:
+
+  * HTTPS via Certbot inside Nginx container
+  * Tagged image versions for rollback
+  * Slack or email notifications from Jenkins
 
 ---
 
-*End of `django-devops.md` offline guide*
-
+*End of `django-devops.md` (Production Containerized Setup Guide)*
