@@ -45,4 +45,4 @@ volumes:
 
 networks:
   mystore-net:
-    external: true
+    driver: bridge
