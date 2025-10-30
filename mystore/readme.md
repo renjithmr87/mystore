@@ -332,5 +332,102 @@ These are mapped in `docker-compose.prod.yml` to persist data across redeploymen
   * Slack or email notifications from Jenkins
 
 ---
+## Finally 
+#  **GitHub Actions workflow** (`.github/workflows/django-ci.yml`) to trigger **webhooks for Jenkins CI/CD pipeline**.
+
+Let’s update it to use the **latest stable Actions**, **modern syntax**, and **best practices (Python 3.12)**.
+We’ll also ensure proper error handling and caching for faster builds.
+
+Here’s the **updated `django-ci.yml`** 👇
+
+---
+
+```yaml
+name: Django CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Django Migrations
+        run: |
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
+
+      - name: Run Tests
+        run: |
+          python manage.py test
+
+      - name: Trigger Jenkins Webhook
+        if: success()
+        env:
+          JENKINS_WEBHOOK_URL: ${{ secrets.JENKINS_WEBHOOK_URL }}
+        run: |
+          echo "Triggering Jenkins CI/CD Pipeline..."
+          curl -X POST "$JENKINS_WEBHOOK_URL"
+```
+
+---
+
+### 🔍 Key Improvements
+
+✅ **Latest action versions:**
+
+* `actions/checkout@v4`
+* `actions/setup-python@v5`
+
+✅ **Python 3.12 (stable LTS)**
+Up-to-date runtime for Django 5.x compatibility.
+
+✅ **Pip caching**
+Drastically reduces build times for repeat workflows.
+
+✅ **Non-interactive migrations**
+`--noinput` prevents CI from hanging on prompts.
+
+✅ **Webhook trigger for Jenkins**
+Automatically POSTs to your Jenkins endpoint stored securely in
+**GitHub Secrets → `JENKINS_WEBHOOK_URL`**.
+
+---
+
+### 🛠️ Setup Secret for Jenkins Webhook
+
+In your GitHub repo:
+
+1. Go to **Settings → Secrets and variables → Actions → New repository secret**
+2. Add:
+
+   * **Name:** `JENKINS_WEBHOOK_URL`
+   * **Value:** Your Jenkins webhook (e.g.,
+     `http://3.110.197.137:8080/github-webhook/`)
+
+---
+
 
 *End of `django-devops.md` (Production Containerized Setup Guide)*
