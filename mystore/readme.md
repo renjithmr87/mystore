@@ -1,6 +1,5 @@
 **cleaned, production-ready markdown guide**
 It’s focused purely on **containerized Jenkins master/worker**, **Django-PostgreSQL-Nginx stack**, and **automated deployment to EC2 (13.204.111.62)**.
-
 ---
 
 # 🐳 Django DevOps Deployment Guide (Production, Offline)
