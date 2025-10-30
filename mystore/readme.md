@@ -355,9 +355,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: mystoredb
+          POSTGRES_USER: mystoreuser
+          POSTGRES_PASSWORD: ren1234
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://mystoreuser:ren1234@127.0.0.1:5432/mystoredb
+
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout Repository
