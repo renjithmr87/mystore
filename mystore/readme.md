@@ -440,12 +440,11 @@ In your GitHub repo:
 
 1. Go to **Settings → Secrets and variables → Actions → New repository secret**
 2. Add:
-
    * **Name:** `JENKINS_WEBHOOK_URL`
+
    * **Value:** Your Jenkins webhook (e.g.,
      `http://3.110.197.137:8080/github-webhook/`)
 
 ---
-
 
 *End of `django-devops.md` (Production Containerized Setup Guide)*
